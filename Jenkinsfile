@@ -3,8 +3,7 @@ stage('build & unit tests') {
 		mvnHome = tool 'M3'
 		checkout scm
 		sh "'${mvnHome}/bin/mvn' -Dmaven.test.failure.ignore clean package"
-		junit '**/target/surefire-reports/TEST-*.xml'
-		archive 'target/*.jar'
+		stash includes: 'target/simple-app-1.0-SNAPSHOT.jar', name: 'jar'
 	}
 }
 
@@ -35,11 +34,19 @@ stage('acceptance-tests') {
 }
 
 stage('staging') {
-	node('build') {
-		sleep 1
+	node('ssh') {
+		unstash 'jar'
+		sh "ls -l target"
 	}
 }
 
 stage('manual-approval') {
 	input 'Deploy in production?'
+}
+
+stage('production') {
+	node('ssh') {
+		unstash 'jar'
+		sh "ls -l target"
+	}
 }
