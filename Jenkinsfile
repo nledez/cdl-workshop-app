@@ -1,6 +1,10 @@
 stage('build & unit tests') {
 	node('build') {
-		sleep 1
+		mvnHome = tool 'M3'
+		checkout scm
+		sh "'${mvnHome}/bin/mvn' -Dmaven.test.failure.ignore clean package"
+		junit '**/target/surefire-reports/TEST-*.xml'
+		archive 'target/*.jar'
 	}
 }
 
